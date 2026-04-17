@@ -149,57 +149,19 @@ async function fetchLocations(tabId) {
 
 let currentSearchTerm = '';
 let originalLocations = [];
-let searchTimeout = null;
 
 function handleSearch(val) {
-    currentSearchTerm = val.trim();
-    if(searchTimeout) clearTimeout(searchTimeout);
+    currentSearchTerm = val.trim().toLowerCase();
     
-    if (currentSearchTerm.length > 2) {
-        // Trigger live Wikipedia fetch for global locations
-        searchTimeout = setTimeout(() => {
-            fetchWikipediaLocations(currentSearchTerm);
-        }, 400); 
+    if (currentSearchTerm.length === 0) {
+        currentLocations = [...originalLocations];
     } else {
-        if (currentSearchTerm.length === 0) {
-            currentLocations = [...originalLocations];
-        } else {
-            const lowerTerm = currentSearchTerm.toLowerCase();
-            currentLocations = originalLocations.filter(loc => 
-                loc.name.toLowerCase().includes(lowerTerm) || 
-                loc.type.toLowerCase().includes(lowerTerm)
-            );
-        }
-        renderLocationsView(null);
+        currentLocations = originalLocations.filter(loc => 
+            loc.name.toLowerCase().includes(currentSearchTerm) || 
+            loc.type.toLowerCase().includes(currentSearchTerm)
+        );
     }
-}
-
-async function fetchWikipediaLocations(query) {
-    try {
-        const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=400&exintro=1&explaintext=1`;
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        let newLocs = [];
-        if (data && data.query && data.query.pages) {
-            Object.values(data.query.pages).forEach((page, index) => {
-                newLocs.push({
-                    id: 'wiki_' + page.pageid,
-                    name: page.title,
-                    type: "Global Destination",
-                    rating: (4.2 + (index % 5) * 0.15).toFixed(1), // simulate high dynamic rating
-                    price: page.title.toLowerCase().includes('india') ? "Free Visa" : "$250/tour",
-                    distance: "Global",
-                    desc: page.extract ? page.extract.substring(0, 110) + '...' : 'Historic and famous tourist location.',
-                    img: page.thumbnail ? page.thumbnail.source : null,
-                });
-            });
-        }
-        currentLocations = newLocs;
-        renderLocationsView(null);
-    } catch (e) {
-        console.error("Wiki Fetch:", e);
-    }
+    renderLocationsView(null);
 }
 
 function renderLocationsView(tabId) {
