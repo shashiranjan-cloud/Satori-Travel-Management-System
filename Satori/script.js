@@ -107,12 +107,15 @@ function toggleTheme() {
 /**
  * NAVIGATION
  */
+let currentTabId = 'dashboard'; // Track current active tab safely
+
 function switchTab(tabId) {
+    currentTabId = tabId;
     navItems.forEach(nav => nav.classList.remove('active'));
     event && event.currentTarget ? event.currentTarget.classList.add('active') : navItems[0].classList.add('active');
     
     pageTitle.textContent = tabId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    contentContainer.innerHTML = ''; // clear
+    contentContainer.innerHTML = '';
     
     const searchContainer = document.getElementById('searchContainer');
     if (searchContainer) searchContainer.style.display = 'none';
@@ -125,7 +128,12 @@ function switchTab(tabId) {
     if (activeDataTabs.includes(tabId)) {
         fetchLocations(tabId);
     } else {
-        contentContainer.innerHTML = `<p style="opacity:0.7">This is the ${tabId} section. It is currently under development.</p>`;
+        contentContainer.innerHTML = `
+            <div style="text-align:center; margin-top:4rem; opacity:0.5">
+                <div style="font-size:3rem; margin-bottom:1rem">🚧</div>
+                <h2>${tabId.charAt(0).toUpperCase()+tabId.slice(1)} Section</h2>
+                <p>This section is currently under development. Check back soon!</p>
+            </div>`;
     }
 }
 
@@ -156,16 +164,19 @@ function handleSearch(val) {
     if (currentSearchTerm.length === 0) {
         currentLocations = [...originalLocations];
     } else {
+        // Search across name, type, description and distance for better coverage
         currentLocations = originalLocations.filter(loc => 
-            loc.name.toLowerCase().includes(currentSearchTerm) || 
-            loc.type.toLowerCase().includes(currentSearchTerm)
+            (loc.name   && loc.name.toLowerCase().includes(currentSearchTerm)) || 
+            (loc.type   && loc.type.toLowerCase().includes(currentSearchTerm)) ||
+            (loc.desc   && loc.desc.toLowerCase().includes(currentSearchTerm)) ||
+            (loc.distance && loc.distance.toLowerCase().includes(currentSearchTerm))
         );
     }
-    renderLocationsView(null);
+    renderLocationsView(currentTabId);
 }
 
 function renderLocationsView(tabId) {
-    const activeTab = tabId || document.querySelector('nav ul li.active').textContent.toLowerCase().replace(' ', '-');
+    const activeTab = tabId || currentTabId;
     
     let html = '';
     
@@ -226,21 +237,44 @@ function renderPremiumDetails(loc) {
                     <span>${loc.price}</span>
                 </div>
                 <div class="card-meta" style="margin-top:0.5rem">
-                    <span>Distance: ${loc.distance}</span>
+                    <span>📍 ${loc.distance}</span>
                 </div>
                 <p class="card-desc" style="margin-top:1rem">${loc.desc}</p>
-                <button class="btn-details" style="background:#00b85c" onclick="event.stopPropagation(); alert('Premium Booking Confirmed for ${loc.name}!')">Book Now</button>
+                <button class="btn-details" style="background:#00b85c" onclick="event.stopPropagation(); showToast('✅ Booking Confirmed', 'Your booking for ${loc.name} has been confirmed!', 'success')">📅 Book Now</button>
             </div>
         `;
     } else {
         return `
-            <div class="premium-details" style="opacity:0.6; text-align:center; display:flex; flex-direction:column; gap:10px;">
-                <p>Advanced details hidden</p>
-                <small style="margin-bottom:10px;">Upgrade to Premium or Black to view details</small>
-                <button class="btn-details" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2)" onclick="event.stopPropagation(); alert('Standard Booking Requested for ${loc.name}!')">Request Standard Booking</button>
+            <div class="premium-details" style="text-align:center; display:flex; flex-direction:column; gap:10px;">
+                <p style="opacity:0.6">🔒 Details hidden</p>
+                <small style="opacity:0.5; margin-bottom:4px;">Upgrade to Premium or Black to unlock full details</small>
+                <button class="btn-details" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15)" onclick="event.stopPropagation(); showToast('📨 Request Sent', 'Standard booking request sent for ${loc.name}. Our team will contact you soon.', 'info')">📞 Request Booking</button>
             </div>
         `;
     }
+}
+
+// Toast notification system - replaces all alert() popups
+function showToast(title, message, type = 'info') {
+    const existing = document.getElementById('satori-toast');
+    if (existing) existing.remove();
+
+    const colors = { success: '#00b85c', info: '#3a85ff', error: '#e74c3c' };
+    const toast = document.createElement('div');
+    toast.id = 'satori-toast';
+    toast.innerHTML = `<strong>${title}</strong><br><span style="opacity:0.85; font-size:0.9rem">${message}</span>`;
+    toast.style.cssText = `
+        position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+        background: ${colors[type]}; color: white;
+        padding: 1rem 1.5rem; border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        font-family: inherit; max-width: 320px;
+        animation: slideInToast 0.4s ease; cursor: pointer;
+        line-height: 1.5;
+    `;
+    toast.onclick = () => toast.remove();
+    document.body.appendChild(toast);
+    setTimeout(() => toast && toast.remove(), 4000);
 }
 
 // Simulated Smart Feature

@@ -462,3 +462,9 @@ header {
 .modal-box h2 {
     margin-bottom: 2rem;
 }
+
+/* Toast Animation */
+@keyframes slideInToast {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
