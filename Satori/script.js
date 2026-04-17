@@ -113,6 +113,13 @@ function switchTab(tabId) {
     
     pageTitle.textContent = tabId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     contentContainer.innerHTML = ''; // clear
+    
+    const searchContainer = document.getElementById('searchContainer');
+    if (searchContainer) searchContainer.style.display = 'none';
+
+    currentSearchTerm = '';
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
 
     const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden-places'];
     if (activeDataTabs.includes(tabId)) {
@@ -139,10 +146,24 @@ async function fetchLocations(tabId) {
     }
 }
 
+let currentSearchTerm = '';
+
+function handleSearch(val) {
+    currentSearchTerm = val.toLowerCase();
+    renderLocationsView(null); // Passing null ignores the header refresh logic, but we still need tabId context
+    // Actually, to make it consistent, I'll pass currentTabId.
+}
+
 function renderLocationsView(tabId) {
+    const activeTab = tabId || document.querySelector('nav ul li.active').textContent.toLowerCase().replace(' ', '-');
+    
     let html = '';
     
-    if (tabId === 'dashboard') {
+    // Show search bar only if we're rendering locations data
+    const searchContainer = document.getElementById('searchContainer');
+    if(searchContainer) searchContainer.style.display = 'block';
+
+    if (activeTab === 'dashboard') {
         html += `<h2 class="section-title">Trending Now</h2>`;
         // Simulate smart recommendations
         html += `<p style="margin-bottom: 2rem; opacity:0.8;">Based on simulated data, these are the top recommended places near you.</p>`;
@@ -158,7 +179,16 @@ function renderLocationsView(tabId) {
 
     html += `<div class="grid-layout">`;
     
-    currentLocations.forEach(loc => {
+    const filteredLocs = currentLocations.filter(loc => 
+        loc.name.toLowerCase().includes(currentSearchTerm) || 
+        loc.type.toLowerCase().includes(currentSearchTerm)
+    );
+
+    if(filteredLocs.length === 0) {
+        html += `<p style="grid-column: 1/-1; opacity:0.7">No results found for "${currentSearchTerm}"</p>`;
+    }
+
+    filteredLocs.forEach(loc => {
         html += `
             <div class="card" onclick="simulateSelection('${loc.name}')">
                 <div>
@@ -189,14 +219,15 @@ function renderPremiumDetails(loc) {
                     <span>Distance: ${loc.distance}</span>
                 </div>
                 <p class="card-desc" style="margin-top:1rem">${loc.desc}</p>
-                <button class="btn-details" onclick="event.stopPropagation(); alert('Full Details View Opened')">View Full Details</button>
+                <button class="btn-details" style="background:#00b85c" onclick="event.stopPropagation(); alert('Premium Booking Confirmed for ${loc.name}!')">Book Now</button>
             </div>
         `;
     } else {
         return `
-            <div class="premium-details" style="opacity:0.5; text-align:center;">
+            <div class="premium-details" style="opacity:0.6; text-align:center; display:flex; flex-direction:column; gap:10px;">
                 <p>Advanced details hidden</p>
-                <small>Upgrade to Premium or Black to view details</small>
+                <small style="margin-bottom:10px;">Upgrade to Premium or Black to view details</small>
+                <button class="btn-details" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2)" onclick="event.stopPropagation(); alert('Standard Booking Requested for ${loc.name}!')">Request Standard Booking</button>
             </div>
         `;
     }

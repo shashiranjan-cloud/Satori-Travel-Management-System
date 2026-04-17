@@ -69,8 +69,18 @@
         </aside>
 
         <main class="content-area">
-            <header>
-                <h1 id="pageTitle">Overview</h1>
+            <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <h1 id="pageTitle" style="margin: 0; font-size: 1.8rem;">Overview</h1>
+                    
+                    <div id="searchContainer" class="search-box" style="display: none; position: relative;">
+                        <!-- Glassmorphic search input -->
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.6;">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search places..." 
+                               onkeyup="handleSearch(this.value)" 
+                               style="padding: 0.8rem 1rem 0.8rem 2.5rem; width: 300px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: inherit; outline: none; font-family: inherit; font-size: 0.95rem; transition: 0.3s ease;">
+                    </div>
+                </div>
                 <div class="header-actions">
                     <button class="icon-btn" onclick="toggleTheme()">🌓</button>
                     <button class="icon-btn" onclick="logout()">Logout</button>
