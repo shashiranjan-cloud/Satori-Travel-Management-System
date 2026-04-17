@@ -144,7 +144,7 @@ function renderLocationsView(tabId) {
     if (currentUser.role === 'ADMIN') {
         html += `
             <div class="admin-actions">
-                <button onclick="alert('Admin: Add Location Window')">+ Add Location</button>
+                <button onclick="toggleAddLocationModal(true)">+ Add Location</button>
             </div>
         `;
     }
@@ -222,4 +222,42 @@ function simulateSelection(placeName) {
 
     html += `</div>`;
     contentContainer.innerHTML = html;
+}
+
+// --- Modal Logic ---
+function toggleAddLocationModal(show) {
+    const modal = document.getElementById('locationModal');
+    modal.style.display = show ? 'flex' : 'none';
+}
+
+function submitNewLocation() {
+    const name = document.getElementById('locName').value.trim();
+    const type = document.getElementById('locType').value.trim();
+    const price = document.getElementById('locPrice').value.trim();
+    const desc = document.getElementById('locDesc').value.trim();
+
+    if (!name || !type) {
+        alert("Name and Type are required.");
+        return;
+    }
+
+    currentLocations.unshift({
+        id: Date.now(),
+        name: name,
+        type: type,
+        rating: 5.0,
+        price: price || "Custom",
+        distance: "Added Local",
+        desc: desc || "Newly added location by Admin."
+    });
+
+    toggleAddLocationModal(false);
+    
+    document.getElementById('locName').value = '';
+    document.getElementById('locType').value = '';
+    document.getElementById('locPrice').value = '';
+    document.getElementById('locDesc').value = '';
+
+    const activeTab = document.querySelector('nav li.active').textContent.trim().toLowerCase();
+    renderLocationsView(activeTab);
 }

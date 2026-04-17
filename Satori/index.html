@@ -83,6 +83,33 @@
         </main>
     </div>
 
+    <!-- Modal for Adding Location -->
+    <div id="locationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h2>Add New Location</h2>
+            <div class="input-group">
+                <label>Name (e.g., Mountain Resort)</label>
+                <input type="text" id="locName" placeholder="Location Name">
+            </div>
+            <div class="input-group">
+                <label>Type</label>
+                <input type="text" id="locType" placeholder="e.g., Location, Hotel, Restaurant">
+            </div>
+            <div class="input-group">
+                <label>Price</label>
+                <input type="text" id="locPrice" placeholder="e.g., $100/night">
+            </div>
+            <div class="input-group">
+                <label>Description</label>
+                <input type="text" id="locDesc" placeholder="Brief description">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="submitNewLocation()">Save Location</button>
+                <button class="secondary" onclick="toggleAddLocationModal(false)">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
