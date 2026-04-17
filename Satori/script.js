@@ -124,7 +124,7 @@ function switchTab(tabId) {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.value = '';
 
-    const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden-places'];
+    const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden-places', 'flights'];
     if (activeDataTabs.includes(tabId)) {
         fetchLocations(tabId);
     } else {

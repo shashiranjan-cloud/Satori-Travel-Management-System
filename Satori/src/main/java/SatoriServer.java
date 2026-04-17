@@ -38,6 +38,7 @@ public class SatoriServer {
         server.createContext("/api/cars", new CategoryDataHandler("cars"));
         server.createContext("/api/restaurants", new CategoryDataHandler("restaurants"));
         server.createContext("/api/hidden-places", new CategoryDataHandler("hidden"));
+        server.createContext("/api/flights", new CategoryDataHandler("flights"));
         
         // Static File Handling
         server.createContext("/", new StaticFileHandler());
@@ -210,6 +211,14 @@ public class SatoriServer {
                     "{\"id\":13, \"name\":\"Mawlynnong\", \"type\":\"Village\", \"rating\":4.9, \"price\":\"Free Entry\", \"distance\":\"Meghalaya\", \"desc\":\"Known as the cleanest village in Asia.\", \"img\":\"https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=400&q=80\" }," +
                     "{\"id\":14, \"name\":\"Gurez Valley\", \"type\":\"Nature\", \"rating\":4.8, \"price\":\"Permit req.\", \"distance\":\"Kashmir\", \"desc\":\"Surreal valley located near the border.\", \"img\":\"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80\" }," +
                     "{\"id\":15, \"name\":\"Ziro Valley\", \"type\":\"Cultural\", \"rating\":4.7, \"price\":\"$20/tour\", \"distance\":\"Arunachal\", \"desc\":\"Home to the Apatani tribe and music festivals.\", \"img\":\"https://images.unsplash.com/photo-1513569771920-c9e1d31714fc?w=400&q=80\" }" +
+                "]";
+                case "flights" -> "[" +
+                    "{\"id\":16, \"name\":\"Delhi → Mumbai\", \"type\":\"Domestic Flight\", \"rating\":4.7, \"price\":\"₹3,500\", \"distance\":\"2h 10m · IndiGo 6E\", \"desc\":\"Non-stop daily flights from Indira Gandhi International to Chhatrapati Shivaji. Morning and evening slots available.\", \"img\":\"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80\" }," +
+                    "{\"id\":17, \"name\":\"Mumbai → Goa\", \"type\":\"Domestic Flight\", \"rating\":4.8, \"price\":\"₹2,200\", \"distance\":\"1h 05m · Air India\", \"desc\":\"Quick hop from Mumbai to the beach paradise of Goa. Multiple flights daily with great deals.\", \"img\":\"https://images.unsplash.com/photo-1542296332-2e4473faf563?w=400&q=80\" }," +
+                    "{\"id\":18, \"name\":\"Bangalore → Bali\", \"type\":\"International Flight\", \"rating\":4.9, \"price\":\"₹22,000\", \"distance\":\"6h 30m · Singapore Airlines\", \"desc\":\"Direct flights to paradise. Singapore Airlines connects Bangalore to Bali with world-class comfort.\", \"img\":\"https://images.unsplash.com/photo-1559268950-b81c4b8f3a24?w=400&q=80\" }," +
+                    "{\"id\":19, \"name\":\"Delhi → Dubai\", \"type\":\"International Flight\", \"rating\":4.8, \"price\":\"₹18,500\", \"distance\":\"3h 30m · Emirates\", \"desc\":\"Emirates connects Delhi to Dubai in luxury. Business class with gourmet dining and flat beds.\", \"img\":\"https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=400&q=80\" }," +
+                    "{\"id\":20, \"name\":\"Chennai → Singapore\", \"type\":\"International Flight\", \"rating\":4.7, \"price\":\"₹19,800\", \"distance\":\"4h 15m · Scoot\", \"desc\":\"Budget-friendly non-stop flights from Chennai to Singapore Changi — the world top-rated airport.\", \"img\":\"https://images.unsplash.com/photo-1490430657723-4d607c1503fc?w=400&q=80\" }," +
+                    "{\"id\":21, \"name\":\"Mumbai → London\", \"type\":\"Business Class\", \"rating\":5.0, \"price\":\"₹1,20,000\", \"distance\":\"9h 50m · British Airways\", \"desc\":\"Experience the finest business class suite. British Airways Club World from Mumbai to Heathrow.\", \"img\":\"https://images.unsplash.com/photo-1583416750470-965b2707b355?w=400&q=80\" }" +
                 "]";
                 default -> "[]";
             };
