@@ -114,6 +114,13 @@
                 <label>Description</label>
                 <input type="text" id="locDesc" placeholder="Brief description">
             </div>
+            <div class="input-group">
+                <label>🖼️ Upload Image (optional)</label>
+                <input type="file" id="locImage" accept="image/*" style="padding:0.6rem; cursor:pointer; background:var(--input-bg); border-radius:10px; border:1px solid var(--border); width:100%;">
+                <div id="imgPreviewBox" style="margin-top:0.8rem; display:none;">
+                    <img id="imgPreview" style="width:100%; max-height:150px; object-fit:cover; border-radius:10px; border:1px solid var(--border);">
+                </div>
+            </div>
             <div style="display: flex; gap: 10px;">
                 <button onclick="submitNewLocation()">Save Location</button>
                 <button class="secondary" onclick="toggleAddLocationModal(false)">Cancel</button>

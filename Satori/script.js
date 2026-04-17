@@ -492,36 +492,74 @@ function simulateSelection(placeName) {
 function toggleAddLocationModal(show) {
     const modal = document.getElementById('locationModal');
     modal.style.display = show ? 'flex' : 'none';
+    if (!show) {
+        // Reset image preview when modal closes
+        document.getElementById('imgPreviewBox').style.display = 'none';
+        document.getElementById('locImage').value = '';
+    }
 }
 
+// Show live image preview when file is selected
+document.addEventListener('DOMContentLoaded', () => {
+    const imgInput = document.getElementById('locImage');
+    if (imgInput) {
+        imgInput.addEventListener('change', () => {
+            const file = imgInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('imgPreview');
+                    const box = document.getElementById('imgPreviewBox');
+                    preview.src = e.target.result;
+                    box.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
 function submitNewLocation() {
-    const name = document.getElementById('locName').value.trim();
-    const type = document.getElementById('locType').value.trim();
+    const name  = document.getElementById('locName').value.trim();
+    const type  = document.getElementById('locType').value.trim();
     const price = document.getElementById('locPrice').value.trim();
-    const desc = document.getElementById('locDesc').value.trim();
+    const desc  = document.getElementById('locDesc').value.trim();
+    const imgFile = document.getElementById('locImage').files[0];
 
     if (!name || !type) {
-        alert("Name and Type are required.");
+        showToast('⚠️ Missing Fields', 'Name and Type are required.', 'error');
         return;
     }
 
-    currentLocations.unshift({
-        id: Date.now(),
-        name: name,
-        type: type,
-        rating: 5.0,
-        price: price || "Custom",
-        distance: "Added Local",
-        desc: desc || "Newly added location by Admin."
-    });
+    function addToList(imgDataUrl) {
+        const newLoc = {
+            id: Date.now(),
+            name: name,
+            type: type,
+            rating: 5.0,
+            price: price || 'Custom',
+            distance: 'Admin Added',
+            desc: desc || 'Newly added location by Admin.',
+            img: imgDataUrl || null
+        };
+        currentLocations.unshift(newLoc);
+        originalLocations.unshift(newLoc);
 
-    toggleAddLocationModal(false);
-    
-    document.getElementById('locName').value = '';
-    document.getElementById('locType').value = '';
-    document.getElementById('locPrice').value = '';
-    document.getElementById('locDesc').value = '';
+        toggleAddLocationModal(false);
+        document.getElementById('locName').value  = '';
+        document.getElementById('locType').value  = '';
+        document.getElementById('locPrice').value = '';
+        document.getElementById('locDesc').value  = '';
 
-    const activeTab = document.querySelector('nav li.active').textContent.trim().toLowerCase();
-    renderLocationsView(activeTab);
+        showToast('✅ Location Added', `"${name}" has been added successfully!`, 'success');
+        renderLocationsView(currentTabId);
+    }
+
+    if (imgFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => addToList(e.target.result);
+        reader.readAsDataURL(imgFile);
+    } else {
+        addToList(null);
+    }
 }
