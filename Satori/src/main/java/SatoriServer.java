@@ -185,46 +185,34 @@ public class SatoriServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            String data = "[]";
-            
-            switch (category) {
-                case "locations":
-                case "dashboard":
-                    data = "[" +
-                        "{\"id\":1, \"name\":\"Goa Beaches\", \"type\":\"Location\", \"rating\":4.8, \"price\":\"$200/night\", \"distance\":\"Local\", \"desc\":\"Sunny beaches, perfect for holidays.\" }," +
-                        "{\"id\":2, \"name\":\"Taj Hotel\", \"type\":\"Hotel\", \"rating\":5.0, \"price\":\"$500/night\", \"distance\":\"2 km\", \"desc\":\"Luxurious 5-star hotel.\" }," +
-                        "{\"id\":3, \"name\":\"Hidden Cave Cafe\", \"type\":\"Restaurant\", \"rating\":4.6, \"price\":\"$50/person\", \"distance\":\"5 km\", \"desc\":\"A secret place mostly untouched.\" }" +
-                    "]";
-                    break;
-                case "hotels":
-                    data = "[" +
-                        "{\"id\":4, \"name\":\"Taj Mahal Palace\", \"type\":\"5-Star Luxury\", \"rating\":4.9, \"price\":\"$350/night\", \"distance\":\"Mumbai\", \"desc\":\"Iconic luxury hotel overlooking the Gateway of India.\" }," +
-                        "{\"id\":5, \"name\":\"The Leela Palace\", \"type\":\"5-Star Hotel\", \"rating\":4.8, \"price\":\"$420/night\", \"distance\":\"Delhi\", \"desc\":\"Palatial grandeur with world-class dining.\" }," +
-                        "{\"id\":6, \"name\":\"Oberoi Udaivilas\", \"type\":\"Heritage Resort\", \"rating\":5.0, \"price\":\"$600/night\", \"distance\":\"Udaipur\", \"desc\":\"Set on Lake Pichola, known for royal architecture.\" }" +
-                    "]";
-                    break;
-                case "cars":
-                    data = "[" +
-                        "{\"id\":7, \"name\":\"Mercedes S-Class\", \"type\":\"Luxury Sedan\", \"rating\":4.9, \"price\":\"$150/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Ultimate luxury and comfort for city travel.\" }," +
-                        "{\"id\":8, \"name\":\"Range Rover SV\", \"type\":\"Premium SUV\", \"rating\":4.8, \"price\":\"$200/day\", \"distance\":\"Self-drive\", \"desc\":\"Spacious off-roader with luxury interiors.\" }," +
-                        "{\"id\":9, \"name\":\"Toyota Innova Crysta\", \"type\":\"Family MPV\", \"rating\":4.7, \"price\":\"$80/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Highly reliable MPV for family trips.\" }" +
-                    "]";
-                    break;
-                case "restaurants":
-                    data = "[" +
-                        "{\"id\":10, \"name\":\"Indian Accent\", \"type\":\"Fine Dining\", \"rating\":4.9, \"price\":\"$100/person\", \"distance\":\"New Delhi\", \"desc\":\"Award-winning innovative Indian cuisine.\" }," +
-                        "{\"id\":11, \"name\":\"Bukhara\", \"type\":\"Authentic Indian\", \"rating\":4.8, \"price\":\"$80/person\", \"distance\":\"Delhi\", \"desc\":\"World-renowned North West Frontier cuisine.\" }," +
-                        "{\"id\":12, \"name\":\"The Bombay Canteen\", \"type\":\"Cafe & Bar\", \"rating\":4.7, \"price\":\"$40/person\", \"distance\":\"Mumbai\", \"desc\":\"Modern take on regional Indian dishes.\" }" +
-                    "]";
-                    break;
-                case "hidden":
-                    data = "[" +
-                        "{\"id\":13, \"name\":\"Mawlynnong\", \"type\":\"Village\", \"rating\":4.9, \"price\":\"Free Entry\", \"distance\":\"Meghalaya\", \"desc\":\"Known as the cleanest village in Asia.\" }," +
-                        "{\"id\":14, \"name\":\"Gurez Valley\", \"type\":\"Nature\", \"rating\":4.8, \"price\":\"Permit req.\", \"distance\":\"Kashmir\", \"desc\":\"Surreal valley located near the border.\" }," +
-                        "{\"id\":15, \"name\":\"Ziro Valley\", \"type\":\"Cultural\", \"rating\":4.7, \"price\":\"$20/tour\", \"distance\":\"Arunachal\", \"desc\":\"Home to the Apatani tribe and music festivals.\" }" +
-                    "]";
-                    break;
-            }
+            String data = switch (category) {
+                case "locations", "dashboard" -> "[" +
+                    "{\"id\":1, \"name\":\"Goa Beaches\", \"type\":\"Location\", \"rating\":4.8, \"price\":\"$200/night\", \"distance\":\"Local\", \"desc\":\"Sunny beaches, perfect for holidays.\" }," +
+                    "{\"id\":2, \"name\":\"Taj Hotel\", \"type\":\"Hotel\", \"rating\":5.0, \"price\":\"$500/night\", \"distance\":\"2 km\", \"desc\":\"Luxurious 5-star hotel.\" }," +
+                    "{\"id\":3, \"name\":\"Hidden Cave Cafe\", \"type\":\"Restaurant\", \"rating\":4.6, \"price\":\"$50/person\", \"distance\":\"5 km\", \"desc\":\"A secret place mostly untouched.\" }" +
+                "]";
+                case "hotels" -> "[" +
+                    "{\"id\":4, \"name\":\"Taj Mahal Palace\", \"type\":\"5-Star Luxury\", \"rating\":4.9, \"price\":\"$350/night\", \"distance\":\"Mumbai\", \"desc\":\"Iconic luxury hotel overlooking the Gateway of India.\" }," +
+                    "{\"id\":5, \"name\":\"The Leela Palace\", \"type\":\"5-Star Hotel\", \"rating\":4.8, \"price\":\"$420/night\", \"distance\":\"Delhi\", \"desc\":\"Palatial grandeur with world-class dining.\" }," +
+                    "{\"id\":6, \"name\":\"Oberoi Udaivilas\", \"type\":\"Heritage Resort\", \"rating\":5.0, \"price\":\"$600/night\", \"distance\":\"Udaipur\", \"desc\":\"Set on Lake Pichola, known for royal architecture.\" }" +
+                "]";
+                case "cars" -> "[" +
+                    "{\"id\":7, \"name\":\"Mercedes S-Class\", \"type\":\"Luxury Sedan\", \"rating\":4.9, \"price\":\"$150/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Ultimate luxury and comfort for city travel.\" }," +
+                    "{\"id\":8, \"name\":\"Range Rover SV\", \"type\":\"Premium SUV\", \"rating\":4.8, \"price\":\"$200/day\", \"distance\":\"Self-drive\", \"desc\":\"Spacious off-roader with luxury interiors.\" }," +
+                    "{\"id\":9, \"name\":\"Toyota Innova Crysta\", \"type\":\"Family MPV\", \"rating\":4.7, \"price\":\"$80/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Highly reliable MPV for family trips.\" }" +
+                "]";
+                case "restaurants" -> "[" +
+                    "{\"id\":10, \"name\":\"Indian Accent\", \"type\":\"Fine Dining\", \"rating\":4.9, \"price\":\"$100/person\", \"distance\":\"New Delhi\", \"desc\":\"Award-winning innovative Indian cuisine.\" }," +
+                    "{\"id\":11, \"name\":\"Bukhara\", \"type\":\"Authentic Indian\", \"rating\":4.8, \"price\":\"$80/person\", \"distance\":\"Delhi\", \"desc\":\"World-renowned North West Frontier cuisine.\" }," +
+                    "{\"id\":12, \"name\":\"The Bombay Canteen\", \"type\":\"Cafe & Bar\", \"rating\":4.7, \"price\":\"$40/person\", \"distance\":\"Mumbai\", \"desc\":\"Modern take on regional Indian dishes.\" }" +
+                "]";
+                case "hidden" -> "[" +
+                    "{\"id\":13, \"name\":\"Mawlynnong\", \"type\":\"Village\", \"rating\":4.9, \"price\":\"Free Entry\", \"distance\":\"Meghalaya\", \"desc\":\"Known as the cleanest village in Asia.\" }," +
+                    "{\"id\":14, \"name\":\"Gurez Valley\", \"type\":\"Nature\", \"rating\":4.8, \"price\":\"Permit req.\", \"distance\":\"Kashmir\", \"desc\":\"Surreal valley located near the border.\" }," +
+                    "{\"id\":15, \"name\":\"Ziro Valley\", \"type\":\"Cultural\", \"rating\":4.7, \"price\":\"$20/tour\", \"distance\":\"Arunachal\", \"desc\":\"Home to the Apatani tribe and music festivals.\" }" +
+                "]";
+                default -> "[]";
+            };
 
             sendJsonResponse(exchange, 200, data);
         }
