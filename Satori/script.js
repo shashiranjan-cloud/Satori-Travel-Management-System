@@ -127,6 +127,8 @@ function switchTab(tabId) {
     const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden-places', 'flights'];
     if (activeDataTabs.includes(tabId)) {
         fetchLocations(tabId);
+    } else if (tabId === 'membership') {
+        renderMembershipPage();
     } else {
         contentContainer.innerHTML = `
             <div style="text-align:center; margin-top:4rem; opacity:0.5">
@@ -135,6 +137,100 @@ function switchTab(tabId) {
                 <p>This section is currently under development. Check back soon!</p>
             </div>`;
     }
+}
+
+function renderMembershipPage() {
+    const current = currentUser.membership || 'Normal';
+    const isAdmin = currentUser.role === 'ADMIN';
+
+    const plans = [
+        {
+            name: 'Normal',
+            icon: '🌟',
+            price: 'Free',
+            color: '#6c757d',
+            features: [
+                '✅ Browse all locations',
+                '✅ Request standard bookings',
+                '✅ Search global destinations',
+                '❌ Premium details hidden',
+                '❌ Flight business class access',
+                '❌ Priority support',
+            ]
+        },
+        {
+            name: 'Premium',
+            icon: '💎',
+            price: '₹999/month',
+            color: '#3a85ff',
+            popular: true,
+            features: [
+                '✅ Everything in Normal',
+                '✅ Full hotel & car details',
+                '✅ Ratings & pricing visible',
+                '✅ Instant booking confirmation',
+                '✅ Exclusive deal alerts',
+                '❌ VIP concierge service',
+            ]
+        },
+        {
+            name: 'Black',
+            icon: '🔱',
+            price: '₹3,999/month',
+            color: '#f0c040',
+            features: [
+                '✅ Everything in Premium',
+                '✅ VIP concierge 24×7',
+                '✅ Business class flight deals',
+                '✅ Private villa & jet access',
+                '✅ Zero booking fees',
+                '✅ Dedicated travel manager',
+            ]
+        }
+    ];
+
+    let html = `
+        <h2 class="section-title">👑 My Membership</h2>
+        <p style="opacity:0.7; margin-bottom:2.5rem">You are currently on the <strong style="color:var(--primary)">${isAdmin ? 'Admin (All Access)' : current}</strong> plan.</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:2rem;">
+    `;
+
+    plans.forEach(plan => {
+        const isActive = (current === plan.name && !isAdmin) || (isAdmin && plan.name === 'Black');
+        html += `
+            <div style="
+                background: var(--card-bg);
+                border-radius: 20px;
+                overflow: hidden;
+                border: 2px solid ${isActive ? plan.color : 'var(--border)'};
+                box-shadow: ${isActive ? '0 0 30px ' + plan.color + '44' : 'var(--shadow)'};
+                position: relative;
+                transition: transform 0.3s;
+            " onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform='translateY(0)'">
+                ${plan.popular ? `<div style="background:${plan.color}; color:white; text-align:center; padding:0.4rem; font-size:0.8rem; font-weight:700; letter-spacing:1px;">MOST POPULAR</div>` : ''}
+                <div style="padding: 2rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.5rem">${plan.icon}</div>
+                    <h2 style="margin:0; color:${plan.color}">${plan.name}</h2>
+                    <div style="font-size:1.8rem; font-weight:800; margin:1rem 0">${plan.price}</div>
+                    <hr style="border-color:var(--border); margin-bottom:1.5rem">
+                    <ul style="list-style:none; padding:0; margin-bottom:2rem">
+                        ${plan.features.map(f => `<li style="padding:0.4rem 0; font-size:0.95rem">${f}</li>`).join('')}
+                    </ul>
+                    ${isActive
+                        ? `<button style="width:100%; padding:0.9rem; border-radius:10px; background:${plan.color}; color:${plan.name==='Black'?'#000':'white'}; font-weight:700; font-size:1rem; cursor:default;">✓ Current Plan</button>`
+                        : `<button onclick="showToast('🚀 Upgrade Request Sent', 'Our team will contact you shortly to activate ${plan.name} plan!', 'info')" style="width:100%; padding:0.9rem; border-radius:10px; background:rgba(255,255,255,0.07); border:1px solid ${plan.color}; color:${plan.color}; font-weight:700; font-size:1rem;">Upgrade to ${plan.name}</button>`
+                    }
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>
+        <div style="margin-top:3rem; padding:1.5rem; border-radius:16px; background:var(--card-bg); border:1px solid var(--border); opacity:0.8">
+            <p>📞 Need help choosing a plan? Call us at <strong>1800-SATORI</strong> or email <strong>support@satori.travel</strong></p>
+        </div>`;
+
+    contentContainer.innerHTML = html;
 }
 
 /**
