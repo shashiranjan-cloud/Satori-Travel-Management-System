@@ -74,8 +74,11 @@ function logout() {
  * DASHBOARD & THEMING
  */
 function setupDashboard() {
-    welcomeMessage.innerHTML = `Hello, <b>${currentUser.username}</b>` + 
-        (currentUser.role === 'ADMIN' ? ' <span class="admin-badge">ADMIN</span>' : '');
+    if (currentUser.role === 'ADMIN') {
+        welcomeMessage.innerHTML = `Hello, <span class="admin-badge" style="margin-left: 0;">ADMIN</span>`;
+    } else {
+        welcomeMessage.innerHTML = `Hello, <b style="text-transform: capitalize;">${currentUser.username}</b>`;
+    }
     
     membershipBadge.textContent = currentUser.role === 'ADMIN' ? 'System Admin' : 
         (currentUser.membership === 'Black' ? '✔ Verified Black Member' : `${currentUser.membership} Member`);
