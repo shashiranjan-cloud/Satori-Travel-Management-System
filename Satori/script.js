@@ -129,6 +129,8 @@ function switchTab(tabId) {
         fetchLocations(tabId);
     } else if (tabId === 'membership') {
         renderMembershipPage();
+    } else if (tabId === 'bookings') {
+        renderBookingsPage();
     } else {
         contentContainer.innerHTML = `
             <div style="text-align:center; margin-top:4rem; opacity:0.5">
@@ -253,6 +255,7 @@ async function fetchLocations(tabId) {
 
 let currentSearchTerm = '';
 let originalLocations = [];
+let confirmedBookings = []; // Store all confirmed bookings in session
 
 function handleSearch(val) {
     currentSearchTerm = val.trim().toLowerCase();
@@ -336,7 +339,7 @@ function renderPremiumDetails(loc) {
                     <span>📍 ${loc.distance}</span>
                 </div>
                 <p class="card-desc" style="margin-top:1rem">${loc.desc}</p>
-                <button class="btn-details" style="background:#00b85c" onclick="event.stopPropagation(); showToast('✅ Booking Confirmed', 'Your booking for ${loc.name} has been confirmed!', 'success')">📅 Book Now</button>
+                <button class="btn-details" style="background:#00b85c" onclick="event.stopPropagation(); confirmBooking(${JSON.stringify(loc).replace(/"/g, '&quot;')})">📅 Book Now</button>
             </div>
         `;
     } else {
@@ -344,10 +347,80 @@ function renderPremiumDetails(loc) {
             <div class="premium-details" style="text-align:center; display:flex; flex-direction:column; gap:10px;">
                 <p style="opacity:0.6">🔒 Details hidden</p>
                 <small style="opacity:0.5; margin-bottom:4px;">Upgrade to Premium or Black to unlock full details</small>
-                <button class="btn-details" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15)" onclick="event.stopPropagation(); showToast('📨 Request Sent', 'Standard booking request sent for ${loc.name}. Our team will contact you soon.', 'info')">📞 Request Booking</button>
+                <button class="btn-details" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15)" onclick="event.stopPropagation(); confirmBooking(${JSON.stringify(loc).replace(/"/g, '&quot;')}, true)">📞 Request Booking</button>
             </div>
         `;
     }
+}
+
+// Confirm booking - saves to bookings list and shows toast
+function confirmBooking(loc, isRequest = false) {
+    const booking = {
+        ...loc,
+        status: isRequest ? 'Pending' : 'Confirmed',
+        bookedAt: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+        isPremium: !isRequest
+    };
+    // Avoid duplicate bookings
+    const exists = confirmedBookings.find(b => b.id === booking.id);
+    if (!exists) confirmedBookings.push(booking);
+    else exists.status = booking.status;
+
+    if (isRequest) {
+        showToast('📨 Request Sent', `Standard booking request sent for ${loc.name}. Our team will contact you soon.`, 'info');
+    } else {
+        showToast('✅ Booking Confirmed!', `${loc.name} is booked! View it in your Bookings tab.`, 'success');
+    }
+}
+
+function renderBookingsPage() {
+    let html = `<h2 class="section-title">🗓️ My Bookings</h2>`;
+
+    if (confirmedBookings.length === 0) {
+        html += `
+            <div style="text-align:center; margin-top:5rem; opacity:0.5">
+                <div style="font-size:3.5rem">📂</div>
+                <h3 style="margin-top:1rem">No bookings yet</h3>
+                <p>Browse Locations, Hotels, Flights and click <strong>Book Now</strong> to add bookings here.</p>
+            </div>`;
+    } else {
+        html += `<p style="opacity:0.7; margin-bottom:2rem">${confirmedBookings.length} booking(s) in this session.</p>`;
+        html += `<div class="grid-layout">`;
+        confirmedBookings.forEach(b => {
+            const statusColor = b.status === 'Confirmed' ? '#00b85c' : '#f0c040';
+            const imgHtml = b.img ? `<img src="${b.img}" class="card-img" alt="${b.name}" onerror="this.style.display='none'">` : '';
+            html += `
+                <div class="card">
+                    ${imgHtml}
+                    <div style="flex-grow:1; display:flex; flex-direction:column;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem">
+                            <span class="card-type">${b.type}</span>
+                            <span style="font-size:0.75rem; font-weight:700; color:${statusColor}; background:${statusColor}22; padding:0.2rem 0.6rem; border-radius:20px;">${b.status}</span>
+                        </div>
+                        <h3 style="margin:0.3rem 0">${b.name}</h3>
+                        <div class="card-meta" style="margin-top:0.5rem">
+                            <span>⭐ ${b.rating}</span>
+                            <span>${b.price}</span>
+                        </div>
+                        <div class="card-meta" style="margin-top:0.3rem">
+                            <span>📅 ${b.bookedAt}</span>
+                        </div>
+                        <p class="card-desc" style="margin-top:0.8rem; font-size:0.85rem">${b.desc}</p>
+                        <button onclick="cancelBooking(${b.id})" style="margin-top:1rem; padding:0.6rem; border-radius:8px; background:rgba(231,76,60,0.1); border:1px solid #e74c3c; color:#e74c3c; font-size:0.85rem; width:100%;">❌ Cancel Booking</button>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+
+    contentContainer.innerHTML = html;
+}
+
+function cancelBooking(id) {
+    confirmedBookings = confirmedBookings.filter(b => b.id !== id);
+    showToast('🗑️ Booking Cancelled', 'Your booking has been removed.', 'error');
+    renderBookingsPage();
 }
 
 // Toast notification system - replaces all alert() popups
