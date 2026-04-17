@@ -216,9 +216,6 @@ button.secondary:hover {
 }
 
 /* --- DASHBOARD SCREEN --- */
-#dashboardScreen {
-    display: flex; /* overridden by script to none initially */
-}
 
 /* Sidebar */
 .sidebar {
