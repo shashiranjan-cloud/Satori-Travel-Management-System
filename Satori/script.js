@@ -305,16 +305,22 @@ function renderLocationsView(tabId) {
     }
 
     currentLocations.forEach(loc => {
+        const isAdmin = currentUser.role === 'ADMIN';
         let imgHtml = loc.img ? `<img src="${loc.img}" alt="${loc.name}" class="card-img" onerror="this.style.display='none'">` : '';
+        const adminControls = isAdmin ? `
+            <div style="display:flex; gap:8px; margin-bottom:0.8rem;" onclick="event.stopPropagation()">
+                <button onclick="openEditModal(${loc.id})" style="flex:1; padding:0.4rem 0.6rem; font-size:0.78rem; background:rgba(58,133,255,0.15); border:1px solid #3a85ff; color:#3a85ff; border-radius:8px;">✏️ Edit</button>
+                <button onclick="deleteLocation(${loc.id})" style="flex:1; padding:0.4rem 0.6rem; font-size:0.78rem; background:rgba(231,76,60,0.15); border:1px solid #e74c3c; color:#e74c3c; border-radius:8px;">🗑️ Delete</button>
+            </div>` : '';
         html += `
             <div class="card" onclick="simulateSelection('${loc.name}')">
                 ${imgHtml}
                 <div style="flex-grow:1; display:flex; flex-direction:column;">
+                    ${adminControls}
                     <div style="margin-bottom:1rem">
                         <span class="card-type">${loc.type}</span>
                         <h3 style="margin: 0.5rem 0">${loc.name}</h3>
                     </div>
-                
                     ${renderPremiumDetails(loc)}
                 </div>
             </div>
@@ -520,14 +526,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function submitNewLocation() {
-    const name  = document.getElementById('locName').value.trim();
-    const type  = document.getElementById('locType').value.trim();
-    const price = document.getElementById('locPrice').value.trim();
-    const desc  = document.getElementById('locDesc').value.trim();
-    const imgFile = document.getElementById('locImage').files[0];
+    const name     = document.getElementById('locName').value.trim();
+    const category = document.getElementById('locCategory').value;
+    const type     = document.getElementById('locType').value.trim();
+    const price    = document.getElementById('locPrice').value.trim();
+    const desc     = document.getElementById('locDesc').value.trim();
+    const imgFile  = document.getElementById('locImage').files[0];
+    const fullType = type ? `${category} / ${type}` : category;
 
-    if (!name || !type) {
-        showToast('⚠️ Missing Fields', 'Name and Type are required.', 'error');
+    if (!name) {
+        showToast('⚠️ Missing Field', 'Location Name is required.', 'error');
         return;
     }
 
@@ -535,7 +543,7 @@ function submitNewLocation() {
         const newLoc = {
             id: Date.now(),
             name: name,
-            type: type,
+            type: fullType,
             rating: 5.0,
             price: price || 'Custom',
             distance: 'Admin Added',
@@ -544,14 +552,13 @@ function submitNewLocation() {
         };
         currentLocations.unshift(newLoc);
         originalLocations.unshift(newLoc);
-
         toggleAddLocationModal(false);
-        document.getElementById('locName').value  = '';
-        document.getElementById('locType').value  = '';
-        document.getElementById('locPrice').value = '';
-        document.getElementById('locDesc').value  = '';
-
-        showToast('✅ Location Added', `"${name}" has been added successfully!`, 'success');
+        document.getElementById('locName').value     = '';
+        document.getElementById('locCategory').value = 'Location';
+        document.getElementById('locType').value     = '';
+        document.getElementById('locPrice').value    = '';
+        document.getElementById('locDesc').value     = '';
+        showToast('✅ Location Added', `"${name}" added successfully!`, 'success');
         renderLocationsView(currentTabId);
     }
 
@@ -561,5 +568,80 @@ function submitNewLocation() {
         reader.readAsDataURL(imgFile);
     } else {
         addToList(null);
+    }
+}
+
+// Delete a location by ID
+function deleteLocation(id) {
+    const loc = currentLocations.find(l => l.id === id) || originalLocations.find(l => l.id === id);
+    if (!confirm(`Delete "${loc ? loc.name : 'this location'}"?`)) return;
+    currentLocations  = currentLocations.filter(l => l.id !== id);
+    originalLocations = originalLocations.filter(l => l.id !== id);
+    showToast('🗑️ Deleted', `Location removed successfully.`, 'error');
+    renderLocationsView(currentTabId);
+}
+
+// Open edit modal for a location
+function openEditModal(id) {
+    const loc = originalLocations.find(l => l.id === id);
+    if (!loc) return;
+
+    // Reuse add modal, pre-fill values
+    document.getElementById('locName').value  = loc.name;
+    document.getElementById('locPrice').value = loc.price || '';
+    document.getElementById('locDesc').value  = loc.desc  || '';
+    document.getElementById('locType').value  = loc.type  || '';
+    if (document.getElementById('locCategory')) {
+        document.getElementById('locCategory').value = 'Location';
+    }
+    if (loc.img) {
+        document.getElementById('imgPreview').src        = loc.img;
+        document.getElementById('imgPreviewBox').style.display = 'block';
+    }
+
+    // Change modal title and button to "Save Edit"
+    document.querySelector('#locationModal .modal-box h2').textContent = '✏️ Edit Location';
+    const saveBtn = document.querySelector('#locationModal button[onclick="submitNewLocation()"]');
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.setAttribute('onclick', `saveEditLocation(${id})`);
+
+    toggleAddLocationModal(true);
+}
+
+function saveEditLocation(id) {
+    const name     = document.getElementById('locName').value.trim();
+    const type     = document.getElementById('locType').value.trim();
+    const price    = document.getElementById('locPrice').value.trim();
+    const desc     = document.getElementById('locDesc').value.trim();
+    const imgFile  = document.getElementById('locImage').files[0];
+
+    if (!name) {
+        showToast('⚠️ Missing Field', 'Location Name is required.', 'error');
+        return;
+    }
+
+    function applyEdit(imgDataUrl) {
+        [currentLocations, originalLocations].forEach(arr => {
+            const idx = arr.findIndex(l => l.id === id);
+            if (idx !== -1) {
+                arr[idx] = { ...arr[idx], name, type: type || arr[idx].type, price: price || arr[idx].price, desc: desc || arr[idx].desc, img: imgDataUrl || arr[idx].img };
+            }
+        });
+        toggleAddLocationModal(false);
+        // Reset modal title back
+        document.querySelector('#locationModal .modal-box h2').textContent = 'Add New Location';
+        const saveBtn = document.querySelector('#locationModal button');
+        saveBtn.textContent = 'Save Location';
+        saveBtn.setAttribute('onclick', 'submitNewLocation()');
+        showToast('✅ Location Updated', `"${name}" updated successfully!`, 'success');
+        renderLocationsView(currentTabId);
+    }
+
+    if (imgFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => applyEdit(e.target.result);
+        reader.readAsDataURL(imgFile);
+    } else {
+        applyEdit(null);
     }
 }

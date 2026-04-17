@@ -103,8 +103,19 @@
                 <input type="text" id="locName" placeholder="Location Name">
             </div>
             <div class="input-group">
-                <label>Type</label>
-                <input type="text" id="locType" placeholder="e.g., Location, Hotel, Restaurant">
+                <label>📂 Category</label>
+                <select id="locCategory" style="padding:0.9rem 1rem; border-radius:10px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-size:1rem; width:100%;">
+                    <option value="Location">Location</option>
+                    <option value="Hotel">Hotel</option>
+                    <option value="Car">Car</option>
+                    <option value="Restaurant">Restaurant</option>
+                    <option value="Hidden Place">Hidden Place</option>
+                    <option value="Flight">Flight</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>🏷️ Type <span style="opacity:0.5; font-size:0.85rem">(e.g., Beach, Monument, 5-Star Hotel)</span></label>
+                <input type="text" id="locType" placeholder="e.g., Beach Resort, Mountain, Luxury Sedan">
             </div>
             <div class="input-group">
                 <label>Price</label>
