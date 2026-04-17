@@ -111,10 +111,10 @@ function switchTab(tabId) {
     navItems.forEach(nav => nav.classList.remove('active'));
     event && event.currentTarget ? event.currentTarget.classList.add('active') : navItems[0].classList.add('active');
     
-    pageTitle.textContent = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+    pageTitle.textContent = tabId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     contentContainer.innerHTML = ''; // clear
 
-    const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden places'];
+    const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden-places'];
     if (activeDataTabs.includes(tabId)) {
         fetchLocations(tabId);
     } else {
@@ -127,13 +127,15 @@ function switchTab(tabId) {
  */
 async function fetchLocations(tabId) {
     try {
-        let endpoint = tabId === 'dashboard' ? 'locations' : tabId.replace(' ', '-');
+        let endpoint = tabId === 'dashboard' ? 'locations' : tabId;
         const res = await fetch(`${API_URL}/${endpoint}`);
+        if (!res.ok) throw new Error("Server response: " + res.status);
         const data = await res.json();
         currentLocations = data;
         renderLocationsView(tabId);
     } catch (e) {
-        contentContainer.innerHTML = '<p>Error loading data from server.</p>';
+        console.error("Fetch Error:", e);
+        contentContainer.innerHTML = '<p>Error loading data from server. Ensure your local backend is running and refreshed.</p>';
     }
 }
 
