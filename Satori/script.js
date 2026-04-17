@@ -185,7 +185,7 @@ function renderMembershipPage() {
                 '✅ VIP concierge 24×7',
                 '✅ Business class flight deals',
                 '✅ Private villa & jet access',
-                '✅ Zero booking fees',
+                '✅ 🎁 Complimentary lounge + airport transfer',
                 '✅ Dedicated travel manager',
             ]
         }
