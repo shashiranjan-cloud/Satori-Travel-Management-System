@@ -238,18 +238,44 @@ function renderMembershipPage() {
 /**
  * DATA RENDERING
  */
+// ─── localStorage Persistence Helpers ───────────────────────────────────────
+// Each tab has its own key: satori_added_locations, satori_deleted_ids, satori_edited_locations
+function lsKey(action, tab) {
+    return `satori_${action}_${tab || 'locations'}`;
+}
+function lsGet(action, tab) {
+    try { return JSON.parse(localStorage.getItem(lsKey(action, tab))) || []; } catch { return []; }
+}
+function lsSet(action, tab, data) {
+    localStorage.setItem(lsKey(action, tab), JSON.stringify(data));
+}
+
 async function fetchLocations(tabId) {
     try {
         let endpoint = tabId === 'dashboard' ? 'locations' : tabId;
         const res = await fetch(`${API_URL}/${endpoint}`);
-        if (!res.ok) throw new Error("Server response: " + res.status);
-        const data = await res.json();
-        currentLocations = data;
+        if (!res.ok) throw new Error('Server response: ' + res.status);
+        let data = await res.json();
+
+        // Apply admin deletions (persisted across refresh)
+        const deletedIds = lsGet('deleted', endpoint);
+        data = data.filter(loc => !deletedIds.includes(loc.id));
+
+        // Apply admin edits (persisted across refresh)
+        const editedMap = {};
+        lsGet('edited', endpoint).forEach(e => { editedMap[e.id] = e; });
+        data = data.map(loc => editedMap[loc.id] ? { ...loc, ...editedMap[loc.id] } : loc);
+
+        // Apply admin additions (persisted across refresh) — prepend to top
+        const added = lsGet('added', endpoint);
+        data = [...added, ...data];
+
+        currentLocations  = data;
         originalLocations = [...data];
         renderLocationsView(tabId);
     } catch (e) {
-        console.error("Fetch Error:", e);
-        contentContainer.innerHTML = '<p>Error loading data from server. Ensure your local backend is running and refreshed.</p>';
+        console.error('Fetch Error:', e);
+        contentContainer.innerHTML = '<p>Error loading data. Ensure your local server is running.</p>';
     }
 }
 
@@ -540,6 +566,7 @@ function submitNewLocation() {
     }
 
     function addToList(imgDataUrl) {
+        const endpoint = currentTabId === 'dashboard' ? 'locations' : currentTabId;
         const newLoc = {
             id: Date.now(),
             name: name,
@@ -550,6 +577,11 @@ function submitNewLocation() {
             desc: desc || 'Newly added location by Admin.',
             img: imgDataUrl || null
         };
+        // Persist to localStorage so it survives refresh
+        const saved = lsGet('added', endpoint);
+        saved.unshift(newLoc);
+        lsSet('added', endpoint, saved);
+
         currentLocations.unshift(newLoc);
         originalLocations.unshift(newLoc);
         toggleAddLocationModal(false);
@@ -558,7 +590,7 @@ function submitNewLocation() {
         document.getElementById('locType').value     = '';
         document.getElementById('locPrice').value    = '';
         document.getElementById('locDesc').value     = '';
-        showToast('✅ Location Added', `"${name}" added successfully!`, 'success');
+        showToast('✅ Location Saved', `"${name}" saved — survives refresh!`, 'success');
         renderLocationsView(currentTabId);
     }
 
@@ -574,10 +606,24 @@ function submitNewLocation() {
 // Delete a location by ID
 function deleteLocation(id) {
     const loc = currentLocations.find(l => l.id === id) || originalLocations.find(l => l.id === id);
-    if (!confirm(`Delete "${loc ? loc.name : 'this location'}"?`)) return;
+    if (!confirm(`Delete "${loc ? loc.name : 'this location'}"? This cannot be undone (persists after refresh).`)) return;
+
+    const endpoint = currentTabId === 'dashboard' ? 'locations' : currentTabId;
+
+    // If this was an admin-added location, remove from added list too
+    const addedList = lsGet('added', endpoint).filter(l => l.id !== id);
+    lsSet('added', endpoint, addedList);
+
+    // Also track deletion of backend items so they stay removed after refresh
+    const deletedIds = lsGet('deleted', endpoint);
+    if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+        lsSet('deleted', endpoint, deletedIds);
+    }
+
     currentLocations  = currentLocations.filter(l => l.id !== id);
     originalLocations = originalLocations.filter(l => l.id !== id);
-    showToast('🗑️ Deleted', `Location removed successfully.`, 'error');
+    showToast('🗑️ Deleted', 'Location removed and won\'t reappear after refresh.', 'error');
     renderLocationsView(currentTabId);
 }
 
@@ -621,19 +667,39 @@ function saveEditLocation(id) {
     }
 
     function applyEdit(imgDataUrl) {
+        const endpoint = currentTabId === 'dashboard' ? 'locations' : currentTabId;
+        const updatedFields = {
+            id, name,
+            type:  type  || undefined,
+            price: price || undefined,
+            desc:  desc  || undefined,
+            img:   imgDataUrl || undefined
+        };
+        // Persist edit to localStorage
+        const editedList = lsGet('edited', endpoint).filter(e => e.id !== id);
+        editedList.push(updatedFields);
+        lsSet('edited', endpoint, editedList);
+
+        // Also update admin-added list if it was an added location
+        const addedList = lsGet('added', endpoint);
+        const addedIdx = addedList.findIndex(l => l.id === id);
+        if (addedIdx !== -1) {
+            addedList[addedIdx] = { ...addedList[addedIdx], ...updatedFields };
+            lsSet('added', endpoint, addedList);
+        }
+
         [currentLocations, originalLocations].forEach(arr => {
             const idx = arr.findIndex(l => l.id === id);
             if (idx !== -1) {
-                arr[idx] = { ...arr[idx], name, type: type || arr[idx].type, price: price || arr[idx].price, desc: desc || arr[idx].desc, img: imgDataUrl || arr[idx].img };
+                arr[idx] = { ...arr[idx], ...updatedFields };
             }
         });
         toggleAddLocationModal(false);
-        // Reset modal title back
         document.querySelector('#locationModal .modal-box h2').textContent = 'Add New Location';
         const saveBtn = document.querySelector('#locationModal button');
         saveBtn.textContent = 'Save Location';
         saveBtn.setAttribute('onclick', 'submitNewLocation()');
-        showToast('✅ Location Updated', `"${name}" updated successfully!`, 'success');
+        showToast('✅ Location Updated', `"${name}" saved — survives refresh!`, 'success');
         renderLocationsView(currentTabId);
     }
 
