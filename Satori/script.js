@@ -139,6 +139,7 @@ async function fetchLocations(tabId) {
         if (!res.ok) throw new Error("Server response: " + res.status);
         const data = await res.json();
         currentLocations = data;
+        originalLocations = [...data];
         renderLocationsView(tabId);
     } catch (e) {
         console.error("Fetch Error:", e);
@@ -147,11 +148,58 @@ async function fetchLocations(tabId) {
 }
 
 let currentSearchTerm = '';
+let originalLocations = [];
+let searchTimeout = null;
 
 function handleSearch(val) {
-    currentSearchTerm = val.toLowerCase();
-    renderLocationsView(null); // Passing null ignores the header refresh logic, but we still need tabId context
-    // Actually, to make it consistent, I'll pass currentTabId.
+    currentSearchTerm = val.trim();
+    if(searchTimeout) clearTimeout(searchTimeout);
+    
+    if (currentSearchTerm.length > 2) {
+        // Trigger live Wikipedia fetch for global locations
+        searchTimeout = setTimeout(() => {
+            fetchWikipediaLocations(currentSearchTerm);
+        }, 400); 
+    } else {
+        if (currentSearchTerm.length === 0) {
+            currentLocations = [...originalLocations];
+        } else {
+            const lowerTerm = currentSearchTerm.toLowerCase();
+            currentLocations = originalLocations.filter(loc => 
+                loc.name.toLowerCase().includes(lowerTerm) || 
+                loc.type.toLowerCase().includes(lowerTerm)
+            );
+        }
+        renderLocationsView(null);
+    }
+}
+
+async function fetchWikipediaLocations(query) {
+    try {
+        const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&prop=pageimages|extracts&piprop=thumbnail&pithumbsize=400&exintro=1&explaintext=1`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        let newLocs = [];
+        if (data && data.query && data.query.pages) {
+            Object.values(data.query.pages).forEach((page, index) => {
+                newLocs.push({
+                    id: 'wiki_' + page.pageid,
+                    name: page.title,
+                    type: "Global Destination",
+                    rating: (4.2 + (index % 5) * 0.15).toFixed(1), // simulate high dynamic rating
+                    price: page.title.toLowerCase().includes('india') ? "Free Visa" : "$250/tour",
+                    distance: "Global",
+                    desc: page.extract ? page.extract.substring(0, 110) + '...' : 'Historic and famous tourist location.',
+                    img: page.thumbnail ? page.thumbnail.source : null,
+                });
+            });
+        }
+        currentLocations = newLocs;
+        renderLocationsView(null);
+    } catch (e) {
+        console.error("Wiki Fetch:", e);
+    }
 }
 
 function renderLocationsView(tabId) {
@@ -179,24 +227,24 @@ function renderLocationsView(tabId) {
 
     html += `<div class="grid-layout">`;
     
-    const filteredLocs = currentLocations.filter(loc => 
-        loc.name.toLowerCase().includes(currentSearchTerm) || 
-        loc.type.toLowerCase().includes(currentSearchTerm)
-    );
-
-    if(filteredLocs.length === 0) {
-        html += `<p style="grid-column: 1/-1; opacity:0.7">No results found for "${currentSearchTerm}"</p>`;
+    // We already filtered currentLocations in handleSearch! So we just map over currentLocations.
+    if(currentLocations.length === 0) {
+        html += `<p style="grid-column: 1/-1; opacity:0.7">No results found for "${currentSearchTerm}". Try searching for specific global tourist places like 'Paris' or 'London'!</p>`;
     }
 
-    filteredLocs.forEach(loc => {
+    currentLocations.forEach(loc => {
+        let imgHtml = loc.img ? `<img src="${loc.img}" alt="${loc.name}" class="card-img" onerror="this.style.display='none'">` : '';
         html += `
             <div class="card" onclick="simulateSelection('${loc.name}')">
-                <div>
-                    <span class="card-type">${loc.type}</span>
-                    <h3>${loc.name}</h3>
-                </div>
+                ${imgHtml}
+                <div style="flex-grow:1; display:flex; flex-direction:column;">
+                    <div style="margin-bottom:1rem">
+                        <span class="card-type">${loc.type}</span>
+                        <h3 style="margin: 0.5rem 0">${loc.name}</h3>
+                    </div>
                 
-                ${renderPremiumDetails(loc)}
+                    ${renderPremiumDetails(loc)}
+                </div>
             </div>
         `;
     });
