@@ -114,7 +114,8 @@ function switchTab(tabId) {
     pageTitle.textContent = tabId.charAt(0).toUpperCase() + tabId.slice(1);
     contentContainer.innerHTML = ''; // clear
 
-    if (tabId === 'locations' || tabId === 'dashboard') {
+    const activeDataTabs = ['locations', 'dashboard', 'hotels', 'cars', 'restaurants', 'hidden places'];
+    if (activeDataTabs.includes(tabId)) {
         fetchLocations(tabId);
     } else {
         contentContainer.innerHTML = `<p style="opacity:0.7">This is the ${tabId} section. It is currently under development.</p>`;
@@ -126,7 +127,8 @@ function switchTab(tabId) {
  */
 async function fetchLocations(tabId) {
     try {
-        const res = await fetch(`${API_URL}/locations`);
+        let endpoint = tabId === 'dashboard' ? 'locations' : tabId.replace(' ', '-');
+        const res = await fetch(`${API_URL}/${endpoint}`);
         const data = await res.json();
         currentLocations = data;
         renderLocationsView(tabId);

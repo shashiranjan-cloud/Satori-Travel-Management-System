@@ -33,7 +33,11 @@ public class SatoriServer {
         // API Endpoints
         server.createContext("/api/login", new LoginHandler());
         server.createContext("/api/register", new RegisterHandler());
-        server.createContext("/api/locations", new LocationsHandler());
+        server.createContext("/api/locations", new CategoryDataHandler("locations"));
+        server.createContext("/api/hotels", new CategoryDataHandler("hotels"));
+        server.createContext("/api/cars", new CategoryDataHandler("cars"));
+        server.createContext("/api/restaurants", new CategoryDataHandler("restaurants"));
+        server.createContext("/api/hidden-places", new CategoryDataHandler("hidden"));
         
         // Static File Handling
         server.createContext("/", new StaticFileHandler());
@@ -174,17 +178,48 @@ public class SatoriServer {
         }
     }
 
-    static class LocationsHandler implements HttpHandler {
+    static class CategoryDataHandler implements HttpHandler {
+        private String category;
+        public CategoryDataHandler(String category) { this.category = category; }
+
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            // Returning some simulated data.
-            String simulatedData = "[" +
-                "{\"id\":1, \"name\":\"Goa Beaches\", \"type\":\"Location\", \"rating\":4.8, \"price\":\"$200/night\", \"distance\":\"Local\", \"desc\":\"Sunny beaches, perfect for holidays.\" }," +
-                "{\"id\":2, \"name\":\"Taj Hotel\", \"type\":\"Hotel\", \"rating\":5.0, \"price\":\"$500/night\", \"distance\":\"2 km\", \"desc\":\"Luxurious 5-star hotel.\" }," +
-                "{\"id\":3, \"name\":\"Hidden Cave Cafe\", \"type\":\"Restaurant\", \"rating\":4.6, \"price\":\"$50/person\", \"distance\":\"5 km\", \"desc\":\"A secret place mostly untouched.\" }" +
-            "]";
-            sendJsonResponse(exchange, 200, simulatedData);
+            String data = "[]";
+            
+            if (category.equals("locations") || category.equals("dashboard")) {
+                data = "[" +
+                    "{\"id\":1, \"name\":\"Goa Beaches\", \"type\":\"Location\", \"rating\":4.8, \"price\":\"$200/night\", \"distance\":\"Local\", \"desc\":\"Sunny beaches, perfect for holidays.\" }," +
+                    "{\"id\":2, \"name\":\"Taj Hotel\", \"type\":\"Hotel\", \"rating\":5.0, \"price\":\"$500/night\", \"distance\":\"2 km\", \"desc\":\"Luxurious 5-star hotel.\" }," +
+                    "{\"id\":3, \"name\":\"Hidden Cave Cafe\", \"type\":\"Restaurant\", \"rating\":4.6, \"price\":\"$50/person\", \"distance\":\"5 km\", \"desc\":\"A secret place mostly untouched.\" }" +
+                "]";
+            } else if (category.equals("hotels")) {
+                data = "[" +
+                    "{\"id\":4, \"name\":\"Taj Mahal Palace\", \"type\":\"5-Star Luxury\", \"rating\":4.9, \"price\":\"$350/night\", \"distance\":\"Mumbai\", \"desc\":\"Iconic luxury hotel overlooking the Gateway of India.\" }," +
+                    "{\"id\":5, \"name\":\"The Leela Palace\", \"type\":\"5-Star Hotel\", \"rating\":4.8, \"price\":\"$420/night\", \"distance\":\"Delhi\", \"desc\":\"Palatial grandeur with world-class dining.\" }," +
+                    "{\"id\":6, \"name\":\"Oberoi Udaivilas\", \"type\":\"Heritage Resort\", \"rating\":5.0, \"price\":\"$600/night\", \"distance\":\"Udaipur\", \"desc\":\"Set on Lake Pichola, known for royal architecture.\" }" +
+                "]";
+            } else if (category.equals("cars")) {
+                data = "[" +
+                    "{\"id\":7, \"name\":\"Mercedes S-Class\", \"type\":\"Luxury Sedan\", \"rating\":4.9, \"price\":\"$150/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Ultimate luxury and comfort for city travel.\" }," +
+                    "{\"id\":8, \"name\":\"Range Rover SV\", \"type\":\"Premium SUV\", \"rating\":4.8, \"price\":\"$200/day\", \"distance\":\"Self-drive\", \"desc\":\"Spacious off-roader with luxury interiors.\" }," +
+                    "{\"id\":9, \"name\":\"Toyota Innova Crysta\", \"type\":\"Family MPV\", \"rating\":4.7, \"price\":\"$80/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Highly reliable MPV for family trips.\" }" +
+                "]";
+            } else if (category.equals("restaurants")) {
+                data = "[" +
+                    "{\"id\":10, \"name\":\"Indian Accent\", \"type\":\"Fine Dining\", \"rating\":4.9, \"price\":\"$100/person\", \"distance\":\"New Delhi\", \"desc\":\"Award-winning innovative Indian cuisine.\" }," +
+                    "{\"id\":11, \"name\":\"Bukhara\", \"type\":\"Authentic Indian\", \"rating\":4.8, \"price\":\"$80/person\", \"distance\":\"Delhi\", \"desc\":\"World-renowned North West Frontier cuisine.\" }," +
+                    "{\"id\":12, \"name\":\"The Bombay Canteen\", \"type\":\"Cafe & Bar\", \"rating\":4.7, \"price\":\"$40/person\", \"distance\":\"Mumbai\", \"desc\":\"Modern take on regional Indian dishes.\" }" +
+                "]";
+            } else if (category.equals("hidden")) {
+                data = "[" +
+                    "{\"id\":13, \"name\":\"Mawlynnong\", \"type\":\"Village\", \"rating\":4.9, \"price\":\"Free Entry\", \"distance\":\"Meghalaya\", \"desc\":\"Known as the cleanest village in Asia.\" }," +
+                    "{\"id\":14, \"name\":\"Gurez Valley\", \"type\":\"Nature\", \"rating\":4.8, \"price\":\"Permit req.\", \"distance\":\"Kashmir\", \"desc\":\"Surreal valley located near the border.\" }," +
+                    "{\"id\":15, \"name\":\"Ziro Valley\", \"type\":\"Cultural\", \"rating\":4.7, \"price\":\"$20/tour\", \"distance\":\"Arunachal\", \"desc\":\"Home to the Apatani tribe and music festivals.\" }" +
+                "]";
+            }
+
+            sendJsonResponse(exchange, 200, data);
         }
     }
 
