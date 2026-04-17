@@ -191,7 +191,7 @@ function renderLocationsView(tabId) {
     
     // We already filtered currentLocations in handleSearch! So we just map over currentLocations.
     if(currentLocations.length === 0) {
-        html += `<p style="grid-column: 1/-1; opacity:0.7">No results found for "${currentSearchTerm}". Try searching for specific global tourist places like 'Paris' or 'London'!</p>`;
+        html += `<p style="grid-column: 1/-1; opacity:0.7">No results matching "${currentSearchTerm}" — try "Goa", "Hotel" or "Car".</p>`;
     }
 
     currentLocations.forEach(loc => {
@@ -245,24 +245,37 @@ function renderPremiumDetails(loc) {
 
 // Simulated Smart Feature
 function simulateSelection(placeName) {
-    // When a user selects a place, simulate showing "nearby places"
+    // When a user selects a place, show its full details + nearby real places from backend
     pageTitle.textContent = placeName;
+
+    // Find selected location details from backend original data
+    const selected = originalLocations.find(l => l.name === placeName);
+    const imgHtml = selected && selected.img 
+        ? `<img src="${selected.img}" style="width:100%;max-height:280px;object-fit:cover;border-radius:16px;margin-bottom:1.5rem" onerror="this.style.display='none'">` 
+        : '';
+
     let html = `
         <button class="secondary" style="width:auto; margin-bottom: 2rem" onclick="switchTab('locations')">← Back to Locations</button>
+        ${imgHtml}
         <h2 class="section-title">Details for ${placeName}</h2>
-        <p style="margin-bottom: 3rem; opacity: 0.8">You have selected ${placeName}. Here are the smart recommendations.</p>
+        <p style="margin-bottom: 3rem; opacity: 0.8">You have selected <strong>${placeName}</strong>. Explore more places from our curated collection below.</p>
         
-        <h2 class="section-title">Nearby Places Based On Your Location</h2>
+        <h2 class="section-title">More Places You May Like</h2>
         <div class="grid-layout">
     `;
     
-    currentLocations.forEach(loc => {
+    // Use originalLocations (real backend data) NOT currentLocations (which may be search-filtered)
+    originalLocations.forEach(loc => {
         if(loc.name !== placeName) {
+            const cardImg = loc.img ? `<img src="${loc.img}" alt="${loc.name}" class="card-img" onerror="this.style.display='none'">` : '';
             html += `
-                <div class="card">
-                    <span class="card-type">${loc.type}</span>
-                    <h3>${loc.name}</h3>
-                    ${renderPremiumDetails(loc)}
+                <div class="card" onclick="simulateSelection('${loc.name}')">
+                    ${cardImg}
+                    <div style="flex-grow:1; display:flex; flex-direction:column;">
+                        <span class="card-type">${loc.type}</span>
+                        <h3 style="margin:0.4rem 0">${loc.name}</h3>
+                        ${renderPremiumDetails(loc)}
+                    </div>
                 </div>
             `;
         }
