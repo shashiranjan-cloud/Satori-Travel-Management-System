@@ -198,8 +198,8 @@ public class SatoriServer {
                 "]";
                 case "cars" -> "[" +
                     "{\"id\":7, \"name\":\"Mercedes S-Class\", \"type\":\"Luxury Sedan\", \"rating\":4.9, \"price\":\"$150/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Ultimate luxury and comfort for city travel.\", \"img\":\"https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400&q=80\" }," +
-                    "{\"id\":8, \"name\":\"Range Rover SV\", \"type\":\"Premium SUV\", \"rating\":4.8, \"price\":\"$200/day\", \"distance\":\"Self-drive\", \"desc\":\"Spacious off-roader with luxury interiors.\", \"img\":\"https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=400&q=80\" }," +
-                    "{\"id\":9, \"name\":\"Toyota Innova Crysta\", \"type\":\"Family MPV\", \"rating\":4.7, \"price\":\"$80/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Highly reliable MPV for family trips.\", \"img\":\"https://images.unsplash.com/photo-1550524514-486d34e62817?w=400&q=80\" }" +
+                    "{\"id\":8, \"name\":\"Range Rover SV\", \"type\":\"Premium SUV\", \"rating\":4.8, \"price\":\"$200/day\", \"distance\":\"Self-drive\", \"desc\":\"Spacious off-roader with luxury interiors.\", \"img\":\"https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400&q=80\" }," +
+                    "{\"id\":9, \"name\":\"Toyota Innova Crysta\", \"type\":\"Family MPV\", \"rating\":4.7, \"price\":\"$80/day\", \"distance\":\"Chauffeur avail.\", \"desc\":\"Highly reliable MPV for family trips.\", \"img\":\"https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&q=80\" }" +
                 "]";
                 case "restaurants" -> "[" +
                     "{\"id\":10, \"name\":\"Indian Accent\", \"type\":\"Fine Dining\", \"rating\":4.9, \"price\":\"$100/person\", \"distance\":\"New Delhi\", \"desc\":\"Award-winning innovative Indian cuisine.\", \"img\":\"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80\" }," +
